@@ -60,6 +60,21 @@ export const handleMessage = async (ws, rawMessage, redis) => {
         // Mark as processed (longer horizon than claim TTL)
         await redis.set(processedKey, process.env.PORT, 'EX', 86400); // 24h
 
+        // Publish cluster-wide event processed notification
+        try {
+            await redis.publish(
+                'events',
+                JSON.stringify({
+                    type: 'event_processed',
+                    eventId,
+                    processedBy: process.env.PORT,
+                    ts: Date.now(),
+                })
+            );
+        } catch (e) {
+            console.error('⚠️ Failed to publish event_processed:', e.message);
+        }
+
         // Acknowledge to sender
         ws.send(JSON.stringify({ status: 'processed', eventId, processedBy: process.env.PORT, ms: Date.now() - start }));
 

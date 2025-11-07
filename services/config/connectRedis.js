@@ -1,20 +1,36 @@
-import Redis from 'ioredis';
+import Redis from "ioredis";
 
-let redis;
+let redisClient;
+let redisSub;
 
 export const connectRedis = () => {
-    const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
-    redis = new Redis(redisUrl);
+    if (!redisClient) {
+        const redisUrl = process.env.REDIS_URL || "redis://localhost:6379";
+        redisClient = new Redis(redisUrl);
 
-    redis.on('connect', () => {
-        console.log(`✅ Connected to Redis at ${redisUrl}`);
-    });
+        redisClient.on("connect", () => {
+            console.log(`✅ Redis connected (client)`);
+        });
 
-    redis.on('error', (err) => {
-        console.error('❌ Redis error:', err.message);
-    });
-
-    return redis;
+        redisClient.on("error", (err) => {
+            console.error("❌ Redis client error:", err.message);
+        });
+    }
+    return redisClient;
 };
 
-export default connectRedis;
+export const connectRedisSubscriber = () => {
+    if (!redisSub) {
+        const redisUrl = process.env.REDIS_URL || "redis://localhost:6379";
+        redisSub = new Redis(redisUrl);
+
+        redisSub.on("connect", () => {
+            console.log(`✅ Redis connected (subscriber)`);
+        });
+
+        redisSub.on("error", (err) => {
+            console.error("❌ Redis subscriber error:", err.message);
+        });
+    }
+    return redisSub;
+};
