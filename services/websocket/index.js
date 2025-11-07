@@ -7,7 +7,7 @@ export const initializeWebSocket = (server) => {
     wss.on('connection', (ws) => {
         console.log('🟢 New client connected');
 
-        ws.send('Welcome to the WebSocket server!');
+        ws.send('Welcome!!'); 
 
         ws.on('message', (message) => handleMessage(ws, message));
 

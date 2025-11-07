@@ -1,4 +1,10 @@
 node_modules
-.git
-.env
+npm-debug.log
 Dockerfile
+.dockerignore
+.git
+.gitignore
+.env
+*.log
+.vscode
+.idea

@@ -1,0 +1,46 @@
+version: "3.8"
+
+services:
+  listener1:
+    build: .
+    container_name: listener_1
+    environment:
+      - PORT=5001
+      - MONGO_URI=${MONGO_URI}
+    ports:
+      - "5001:5001"
+    depends_on:
+      - mongo
+
+  listener2:
+    build: .
+    container_name: listener_2
+    environment:
+      - PORT=5002
+      - MONGO_URI=${MONGO_URI}
+    ports:
+      - "5002:5002"
+    depends_on:
+      - mongo
+
+  listener3:
+    build: .
+    container_name: listener_3
+    environment:
+      - PORT=5003
+      - MONGO_URI=${MONGO_URI}
+    ports:
+      - "5003:5003"
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:6.0
+    container_name: fantacode_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
