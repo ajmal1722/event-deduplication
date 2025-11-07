@@ -7,10 +7,12 @@ services:
     environment:
       - PORT=5001
       - MONGO_URI=${MONGO_URI}
+      - REDIS_URL=redis://redis:6379
     ports:
       - "5001:5001"
     depends_on:
-      - mongo
+      - redis
+    restart: unless-stopped
 
   listener2:
     build: .
@@ -18,10 +20,12 @@ services:
     environment:
       - PORT=5002
       - MONGO_URI=${MONGO_URI}
+      - REDIS_URL=redis://redis:6379
     ports:
       - "5002:5002"
     depends_on:
-      - mongo
+      - redis
+    restart: unless-stopped
 
   listener3:
     build: .
@@ -29,18 +33,20 @@ services:
     environment:
       - PORT=5003
       - MONGO_URI=${MONGO_URI}
+      - REDIS_URL=redis://redis:6379
     ports:
       - "5003:5003"
     depends_on:
-      - mongo
+      - redis
+    restart: unless-stopped
 
-  mongo:
-    image: mongo:6.0
-    container_name: fantacode_mongo
+  redis:
+    image: redis:7-alpine
+    container_name: fantacode_redis
     ports:
-      - "27017:27017"
+      - "6379:6379"
     volumes:
-      - mongo-data:/data/db
+      - redis-data:/data
 
 volumes:
-  mongo-data:
+  redis-data:
