@@ -1,33 +1,21 @@
-import { connectRedis } from "../../config/connectRedis.js";
-
-// Create shared Redis connection
-const redis = connectRedis();
-
-export const handleMessage = async (ws, message) => {
+export const handleMessage = async (ws, message, redis) => {
     try {
-        const parsed = JSON.parse(message);
-        const eventId = parsed.id || parsed.eventId || parsed._id;
+        const msg = message.toString();
+        console.log("Received:", msg);
 
-        if (!eventId) {
-            console.warn('⚠️ Message missing eventId, skipping');
-            return;
-        }
+        // Read the previous value before updating
+        const prev = await redis.get("lastMessage");
+        console.log("Previous lastMessage:", prev, "on", process.env.PORT);
 
-        // Check if this event is already processed
-        const isDuplicate = await redis.exists(eventId);
-        if (isDuplicate) {
-            console.log(`🚫 Duplicate event skipped: ${eventId}`);
-            return;
-        }
+        // Update the shared key
+        await redis.set("lastMessage", msg);
 
-        // Mark event as processed with a TTL (e.g., 5 minutes)
-        await redis.set(eventId, 'processed', 'EX', 300);
+        // Read back to confirm
+        const stored = await redis.get("lastMessage");
+        console.log("Redis echo:", stored);
 
-        // Process event here
-        console.log(`✅ Processing event: ${eventId}`);
-        ws.send(`Processed event: ${eventId}`);
-
+        ws.send(`Redis shared value: ${stored}`);
     } catch (error) {
-        console.error('❌ handleMessage error:', error.message);
+        console.error("❌ handleMessage error:", error.message);
     }
 };

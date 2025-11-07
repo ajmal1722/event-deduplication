@@ -1,20 +1,21 @@
-import { WebSocketServer } from 'ws';
-import { handleMessage } from './handlers/messageHandler.js';
+import { WebSocketServer } from "ws";
+import { connectRedis } from "../config/connectRedis.js";
+import { handleMessage } from "./handlers/messageHandler.js";
 
 export const initializeWebSocket = (server) => {
     const wss = new WebSocketServer({ server });
 
-    wss.on('connection', (ws) => {
-        console.log('🟢 New client connected');
+    const redis = connectRedis(); // ✅ Shared connection layer
 
-        ws.send('Welcome!!'); 
+    wss.on("connection", (ws) => {
+        console.log("🟢 New WebSocket connection");
 
-        ws.on('message', (message) => handleMessage(ws, message));
+        ws.send("Welcome to the distributed listener!");
 
-        ws.on('close', () => {
-            console.log('🔴 Client disconnected');
-        });
+        ws.on("message", (msg) => handleMessage(ws, msg, redis));
+
+        ws.on("close", () => console.log("🔴 Client disconnected"));
     });
 
-    console.log('⚡ WebSocket server initialized');
+    console.log("⚡ WebSocket server initialized");
 };
