@@ -2,8 +2,8 @@
 
 A distributed WebSocket listener cluster with exactly-once persistence using Redis + MongoDB behind an Nginx reverse proxy.
 
-• See [ARCHITECTURE.md](./ARCHITECTURE.md) for full design, algorithms, failure modes, and scaling notes.
-• See [TESTING.md](./TESTING.md) for step‑by‑step scenarios to validate deduplication and recovery.
+- See [ARCHITECTURE.md](./ARCHITECTURE.md) for full design, algorithms, failure modes, and scaling notes.
+- See [TESTING.md](./TESTING.md) for step‑by‑step scenarios to validate deduplication and recovery.
 
 ## Features
 
@@ -33,8 +33,8 @@ A distributed WebSocket listener cluster with exactly-once persistence using Red
 
 ## Scripts
 
-- Duplicate flood: `node scripts/floodTest.js`
-- Unique load (100 events): `node scripts/loadTest.js`
+- Duplicate flood: `npm run flood`
+- Unique load (100 events): `npm run load`
 
 ## Troubleshooting
 
