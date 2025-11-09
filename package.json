@@ -9,7 +9,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
-    "server": "nodemon server.js"
+    "server": "nodemon server.js",
+    "flood": "node scripts/floodTest.js",
+    "load": "node scripts/loadTest.js"
   },
   "dependencies": {
     "crypto": "^1.0.1",
