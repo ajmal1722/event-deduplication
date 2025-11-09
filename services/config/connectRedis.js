@@ -3,10 +3,20 @@ import Redis from "ioredis";
 let redisClient;
 let redisSub;
 
+const redisUrl = process.env.REDIS_URL || "redis://localhost:6379";
+const redisOptions = {
+    retryStrategy: (times) => Math.min(times * 100, 2000),
+    maxRetriesPerRequest: null,
+    enableReadyCheck: true,
+    autoResubscribe: true,
+    reconnectOnError: () => true,
+};
+
+const createRedis = () => new Redis(redisUrl, redisOptions);
+
 export const connectRedis = () => {
     if (!redisClient) {
-        const redisUrl = process.env.REDIS_URL || "redis://localhost:6379";
-        redisClient = new Redis(redisUrl);
+        redisClient = createRedis();
 
         redisClient.on("connect", () => {
             console.log(`✅ Redis connected (client)`);
@@ -21,8 +31,7 @@ export const connectRedis = () => {
 
 export const connectRedisSubscriber = () => {
     if (!redisSub) {
-        const redisUrl = process.env.REDIS_URL || "redis://localhost:6379";
-        redisSub = new Redis(redisUrl);
+        redisSub = createRedis();
 
         redisSub.on("connect", () => {
             console.log(`✅ Redis connected (subscriber)`);

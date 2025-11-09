@@ -15,6 +15,13 @@ export const handleMessage = async (ws, rawMessage, redis) => {
 
         console.log(`📩 Received event ${eventId} on ${process.env.PORT}`);
 
+        // Short-circuit when Redis is not ready to preserve exactly-once semantics
+        if (!redis || redis.status !== 'ready') {
+            console.log(`⛔ Redis not ready, rejecting event ${eventId} on ${process.env.PORT}`);
+            ws.send(JSON.stringify({ status: 'temporarily_unavailable', reason: 'redis_down', eventId }));
+            return;
+        }
+
         // Fast-path: skip if already processed (covers replays long after claim TTL)
         if (await redis.exists(processedKey)) {
             console.log(`⏭️ Already processed (redis): ${eventId}`);
