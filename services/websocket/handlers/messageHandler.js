@@ -57,32 +57,33 @@ export const handleMessage = async (ws, rawMessage, redis) => {
             }
         }
 
-        // Mark as processed (longer horizon than claim TTL)
-        await redis.set(processedKey, process.env.PORT, 'EX', 86400); // 24h
+        // Only the first finisher should mark processed and publish.
+        // Using NX guarantees a single winner even under heavy concurrency.
+        const firstProcessed = await redis.set(processedKey, process.env.PORT, 'NX', 'EX', 86400); // 24h
+        if (firstProcessed) {
+            // Publish cluster-wide event processed notification (single publish)
+            try {
+                await redis.publish(
+                    'events',
+                    JSON.stringify({
+                        type: 'event_processed',
+                        eventId,
+                        processedBy: process.env.PORT,
+                        ts: Date.now(),
+                    })
+                );
+            } catch (e) {
+                console.error('⚠️ Failed to publish event_processed:', e.message);
+            }
 
-        // Publish cluster-wide event processed notification
-        try {
-            await redis.publish(
-                'events',
-                JSON.stringify({
-                    type: 'event_processed',
-                    eventId,
-                    processedBy: process.env.PORT,
-                    ts: Date.now(),
-                })
-            );
-        } catch (e) {
-            console.error('⚠️ Failed to publish event_processed:', e.message);
+            // Acknowledge to sender (single ack path)
+            ws.send(JSON.stringify({ status: 'processed', eventId, processedBy: process.env.PORT, ms: Date.now() - start }));
+        } else {
+            // Another node finalized first; inform caller succinctly
+            ws.send(JSON.stringify({ status: 'already_processed', eventId }));
         }
-
-        // Acknowledge to sender
-        ws.send(JSON.stringify({ status: 'processed', eventId, processedBy: process.env.PORT, ms: Date.now() - start }));
 
     } catch (err) {
         console.error('❌ Error handling message:', err.message);
-    } finally {
-        if (claimKey) {
-            try { await redis.del(claimKey); } catch {}
-        }
     }
 };
