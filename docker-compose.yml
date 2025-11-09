@@ -12,6 +12,7 @@ services:
       - "5001:5001"
     depends_on:
       - redis
+      - mongo
     restart: unless-stopped
 
   listener2:
@@ -25,6 +26,7 @@ services:
       - "5002:5002"
     depends_on:
       - redis
+      - mongo
     restart: unless-stopped
 
   listener3:
@@ -38,6 +40,7 @@ services:
       - "5003:5003"
     depends_on:
       - redis
+      - mongo
     restart: unless-stopped
 
   redis:
@@ -47,6 +50,14 @@ services:
       - "6379:6379"
     volumes:
       - redis-data:/data
+
+  mongo:
+    image: mongo:7.0
+    container_name: fantacode_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
 
   nginx:
     image: nginx:alpine
@@ -62,3 +73,4 @@ services:
 
 volumes:
   redis-data:
+  mongo-data:
